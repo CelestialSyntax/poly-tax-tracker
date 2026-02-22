@@ -4,6 +4,7 @@ import type {
   PolymarketMarket,
   PolymarketPosition,
   DataApiActivity,
+  DataApiPosition,
 } from "./types";
 
 const CLOB_BASE_URL = "https://clob.polymarket.com";
@@ -143,6 +144,18 @@ export class PolymarketClient {
 
     return allActivity;
   }
+
+  /**
+   * Fetch current positions for a wallet from the Data API.
+   */
+  async fetchDataApiPositions(address: string): Promise<DataApiPosition[]> {
+    const params = new URLSearchParams({ user: address });
+    const res = await rateLimitedFetch(`${DATA_API_BASE_URL}/positions?${params}`);
+    if (!res.ok) {
+      throw new Error(`Polymarket Data API error: ${res.status} ${res.statusText}`);
+    }
+    return res.json();
+  }
 }
 
 export const polymarketClient = new PolymarketClient();
@@ -226,4 +239,13 @@ export async function fetchActivityForWallet(
   address: string
 ): Promise<DataApiActivity[]> {
   return polymarketClient.fetchActivity(address);
+}
+
+/**
+ * Fetch current positions from the Data API (works with EOA addresses).
+ */
+export async function fetchCurrentPositions(
+  address: string
+): Promise<DataApiPosition[]> {
+  return polymarketClient.fetchDataApiPositions(address);
 }

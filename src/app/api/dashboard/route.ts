@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { transactions, userSettings } from "@/lib/db/schema";
+import { transactions, userSettings, wallets } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
-import { TaxCalculator, compareTreatments } from "@/lib/tax/calculator";
+import { TaxCalculator } from "@/lib/tax/calculator";
 import type { Transaction } from "@/lib/tax/types";
 import type { TaxTreatment, CostBasisMethod } from "@/lib/tax/types";
+import { fetchCurrentPositions } from "@/lib/polymarket/api";
 
 export async function GET() {
   const session = await auth();
@@ -15,7 +16,7 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const [rows, settingsRows] = await Promise.all([
+  const [rows, settingsRows, userWallets] = await Promise.all([
     db
       .select()
       .from(transactions)
@@ -26,6 +27,10 @@ export async function GET() {
       .from(userSettings)
       .where(eq(userSettings.userId, userId))
       .limit(1),
+    db
+      .select()
+      .from(wallets)
+      .where(eq(wallets.userId, userId)),
   ]);
 
   const settings = settingsRows[0];
@@ -49,7 +54,7 @@ export async function GET() {
     timestamp: new Date(r.timestamp),
   }));
 
-  // Run tax calculator
+  // Run tax calculator for user's preferred treatment (used for stats)
   const calculator = new TaxCalculator(treatment, costBasis, taxYear);
   const { events, summary } = calculator.calculate(txs);
 
@@ -118,132 +123,83 @@ export async function GET() {
   });
 
   // --- Tax Comparison ---
-  // Build dispositions from events for compareTreatments()
-  const dispositions = events.flatMap((ev) =>
-    ev.lots.map((lot) => ({
-      lotId: lot.lotId,
-      marketId: ev.transaction.marketId,
-      marketTitle: ev.transaction.marketTitle,
-      outcome: ev.transaction.outcome,
-      quantity: lot.quantity,
-      costBasisPerShare: lot.costBasisPerShare,
-      proceedsPerShare: lot.proceedsPerShare,
-      acquiredAt: lot.acquiredAt,
-      disposedAt: lot.disposedAt,
-      holdingPeriod: lot.holdingPeriod,
-      gainLoss: lot.gainLoss,
-      totalCostBasis: lot.costBasisPerShare * lot.quantity,
-      totalProceeds: lot.proceedsPerShare * lot.quantity,
-    })),
-  );
+  // Run calculator for all 3 treatments so netGain is consistent (actual net P&L)
+  const cgCalc = new TaxCalculator("capital_gains", costBasis, taxYear);
+  const gambCalc = new TaxCalculator("gambling", costBasis, taxYear);
+  const bizCalc = new TaxCalculator("business", costBasis, taxYear);
 
-  const comparison = compareTreatments(dispositions, taxYear);
+  const cgResult = cgCalc.calculate(txs);
+  const gambResult = gambCalc.calculate(txs);
+  const bizResult = bizCalc.calculate(txs);
 
-  const totalGain = summary.totalGainLoss;
+  const netPnl = cgResult.summary.totalGainLoss;
+
   const taxComparison = {
     capitalGains: {
-      netGain: comparison.capitalGains.totalNet,
-      estimatedTax:
-        comparison.capitalGains.totalNet > 0
-          ? comparison.capitalGains.shortTermNet * 0.37 +
-            comparison.capitalGains.longTermNet * 0.2
-          : -(
-              Math.min(Math.abs(comparison.capitalGains.totalNet), 3000) * 0.37
-            ),
+      netGain: Math.round(netPnl * 100) / 100,
+      estimatedTax: Math.round(cgResult.summary.estimatedTaxLiability * 100) / 100,
       effectiveRate:
-        totalGain !== 0
-          ? Math.abs(
-              (comparison.capitalGains.totalNet > 0
-                ? comparison.capitalGains.shortTermNet * 0.37 +
-                  comparison.capitalGains.longTermNet * 0.2
-                : -(
-                    Math.min(
-                      Math.abs(comparison.capitalGains.totalNet),
-                      3000,
-                    ) * 0.37
-                  )) / totalGain,
-            )
+        netPnl !== 0
+          ? Math.round(Math.abs(cgResult.summary.estimatedTaxLiability / netPnl) * 1000) / 1000
           : 0,
     },
     gambling: {
-      netGain: comparison.gambling.netGamblingIncome,
-      estimatedTax:
-        Math.max(0, comparison.gambling.netGamblingIncome) * 0.37,
+      netGain: Math.round(netPnl * 100) / 100,
+      estimatedTax: Math.round(gambResult.summary.estimatedTaxLiability * 100) / 100,
       effectiveRate:
-        comparison.gambling.grossWinnings > 0
-          ? (Math.max(0, comparison.gambling.netGamblingIncome) * 0.37) /
-            comparison.gambling.grossWinnings
+        netPnl !== 0
+          ? Math.round(Math.abs(gambResult.summary.estimatedTaxLiability / netPnl) * 1000) / 1000
           : 0,
     },
     business: {
-      netGain: comparison.business.netBusinessIncome,
-      estimatedTax:
-        Math.max(0, comparison.business.netBusinessIncome) * 0.37 +
-        comparison.business.selfEmploymentTax,
+      netGain: Math.round(netPnl * 100) / 100,
+      estimatedTax: Math.round(bizResult.summary.estimatedTaxLiability * 100) / 100,
       effectiveRate:
-        comparison.business.grossIncome > 0
-          ? (Math.max(0, comparison.business.netBusinessIncome) * 0.37 +
-              comparison.business.selfEmploymentTax) /
-            comparison.business.grossIncome
+        netPnl !== 0
+          ? Math.round(Math.abs(bizResult.summary.estimatedTaxLiability / netPnl) * 1000) / 1000
           : 0,
     },
   };
 
   // --- Active Positions ---
-  // Replay transactions to find remaining open lots
-  const sorted = [...txs].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-  );
-  const lotTracker = new Map<
-    string,
-    { qty: number; cost: number; marketTitle: string }[]
-  >();
+  // Fetch real positions from Polymarket Data API (works with EOA addresses)
+  let activePositions: {
+    id: string;
+    market: string;
+    outcome: "YES" | "NO";
+    qty: number;
+    avgPrice: number;
+    currentPrice: number;
+    unrealizedPnl: number;
+  }[] = [];
 
-  for (const tx of sorted) {
-    const key = `${tx.marketId}:${tx.outcome}`;
-    if (tx.type === "BUY") {
-      const existing = lotTracker.get(key) ?? [];
-      existing.push({
-        qty: tx.quantity,
-        cost: tx.pricePerShare,
-        marketTitle: tx.marketTitle,
-      });
-      lotTracker.set(key, existing);
-    } else {
-      const lots = lotTracker.get(key);
-      if (!lots || lots.length === 0) continue;
-      let remaining = tx.quantity;
-      // FIFO disposal
-      while (remaining > 0.000001 && lots.length > 0) {
-        const lot = lots[0];
-        if (lot.qty <= remaining) {
-          remaining -= lot.qty;
-          lots.shift();
-        } else {
-          lot.qty -= remaining;
-          remaining = 0;
-        }
-      }
+  if (userWallets.length > 0) {
+    try {
+      const positionResults = await Promise.all(
+        userWallets.map((w) => fetchCurrentPositions(w.address).catch(() => [])),
+      );
+
+      activePositions = positionResults
+        .flat()
+        .filter((p) => p.size > 0.001)
+        .map((p) => {
+          const outcome = p.outcome.toUpperCase();
+          return {
+            id: p.conditionId + ":" + outcome,
+            market: p.title,
+            outcome: (outcome === "YES" || outcome === "UP" ? "YES" : "NO") as
+              | "YES"
+              | "NO",
+            qty: Math.round(p.size * 100) / 100,
+            avgPrice: Math.round(p.avgPrice * 10000) / 10000,
+            currentPrice: Math.round(p.curPrice * 10000) / 10000,
+            unrealizedPnl: Math.round(p.cashPnl * 100) / 100,
+          };
+        });
+    } catch {
+      // If Polymarket API fails, return empty positions rather than crashing
     }
   }
-
-  const activePositions = [...lotTracker.entries()]
-    .filter(([, lots]) => lots.length > 0 && lots.some((l) => l.qty > 0.000001))
-    .map(([key, lots]) => {
-      const [, outcome] = key.split(":");
-      const totalQty = lots.reduce((s, l) => s + l.qty, 0);
-      const totalCost = lots.reduce((s, l) => s + l.qty * l.cost, 0);
-      const avgPrice = totalQty > 0 ? totalCost / totalQty : 0;
-      return {
-        id: key,
-        market: lots[0].marketTitle,
-        outcome: outcome as "YES" | "NO",
-        qty: Math.round(totalQty * 100) / 100,
-        avgPrice: Math.round(avgPrice * 10000) / 10000,
-        currentPrice: 0,
-        unrealizedPnl: 0,
-      };
-    });
 
   return NextResponse.json({
     stats: {

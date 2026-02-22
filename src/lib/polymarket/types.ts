@@ -85,6 +85,24 @@ export interface PolymarketPosition {
 
 // ─── Polymarket Data API Types ───────────────────────────
 
+export interface DataApiPosition {
+  proxyWallet: string;
+  asset: string;
+  conditionId: string;
+  size: number;
+  avgPrice: number;
+  initialValue: number;
+  currentValue: number;
+  cashPnl: number;
+  percentPnl: number;
+  curPrice: number;
+  redeemable: boolean;
+  title: string;
+  slug: string;
+  outcome: string;          // "Up", "Down", "Yes", "No"
+  outcomeIndex: number;
+}
+
 export interface DataApiActivity {
   proxyWallet: string;
   timestamp: number;          // unix seconds
