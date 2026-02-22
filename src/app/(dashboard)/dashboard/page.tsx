@@ -8,7 +8,6 @@ import { RecentTrades } from "@/components/dashboard/recent-trades";
 import { ActivePositions } from "@/components/dashboard/active-positions";
 import { WinRateRing } from "@/components/dashboard/win-rate-ring";
 import { useDashboardData } from "@/hooks/use-dashboard";
-import { Loader2 } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -38,9 +37,13 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-          <p className="text-sm text-zinc-500">Loading dashboard...</p>
+        <div className="text-center">
+          <div className="text-[#3BFF82] font-mono text-sm mb-2 animate-pulse">
+            $ polytax load --dashboard
+          </div>
+          <div className="text-[#44445A] text-xs font-mono">
+            Fetching your data...
+          </div>
         </div>
       </div>
     );
@@ -50,11 +53,11 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-red-400">Failed to load dashboard</p>
-          <p className="text-xs text-zinc-500">{error}</p>
+          <p className="text-sm text-[#FF3F5C]">Failed to load dashboard</p>
+          <p className="text-xs text-[#8890A8]">{error}</p>
           <button
             onClick={refresh}
-            className="mt-2 rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+            className="mt-2 bg-[#111120] border border-[rgba(255,255,255,0.07)] text-[#F8F8FC] hover:border-[rgba(255,255,255,0.15)] rounded-xl px-4 py-2 text-sm transition-colors"
           >
             Retry
           </button>
@@ -71,10 +74,23 @@ export default function DashboardPage() {
       className="space-y-6"
     >
       <motion.div variants={item}>
-        <h2 className="text-2xl font-bold text-white">Dashboard</h2>
-        <p className="mt-1 text-sm text-zinc-400">
-          Your Polymarket tax overview for {new Date().getFullYear()}
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium tracking-[0.15em] uppercase text-[#3BFF82]">
+              Overview
+            </p>
+            <h2 className="text-2xl font-black text-[#F8F8FC] mt-0.5">
+              Dashboard
+            </h2>
+            <p className="text-sm text-[#8890A8] mt-1">
+              Tax year {new Date().getFullYear()} · FIFO cost basis
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 rounded-xl bg-[#111120] border border-[rgba(255,255,255,0.07)] px-4 py-2">
+            <div className="w-2 h-2 rounded-full bg-[#3BFF82] animate-pulse" />
+            <span className="text-xs text-[#8890A8]">Live sync</span>
+          </div>
+        </div>
       </motion.div>
 
       <motion.div variants={item}>

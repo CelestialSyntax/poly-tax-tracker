@@ -3,77 +3,105 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 export function CTA() {
   return (
-    <section className="relative bg-[#09090b] py-32">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute bottom-0 left-1/4 h-[400px] w-[400px] animate-[drift_20s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,_rgba(99,102,241,0.12)_0%,_transparent_70%)]" />
-        <div className="absolute top-0 right-1/4 h-[300px] w-[300px] animate-[drift_15s_ease-in-out_infinite_reverse] rounded-full bg-[radial-gradient(circle,_rgba(6,182,212,0.08)_0%,_transparent_70%)]" />
-      </div>
+    <section className="relative bg-[#06060C] grid-bg py-32">
+      {/* Ambient orb */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(59,255,130,0.06) 0%, transparent 70%)",
+        }}
+      />
 
       <div className="relative mx-auto max-w-4xl px-6">
+        {/* Main card */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.55 }}
+          className="relative overflow-hidden rounded-3xl border border-[rgba(59,255,130,0.15)] bg-[#111120] p-12 text-center shadow-[0_0_80px_rgba(59,255,130,0.08)] md:p-16"
+        >
+          {/* Gradient overlay inside card */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[rgba(59,255,130,0.03)] to-transparent" />
+
+          <div className="relative z-10">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#F8F8FC]">
+              Ready to Stop Guessing What You Owe?
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-base text-[#8890A8]">
+              Join prediction market traders who file with confidence. Set up in
+              under 2 minutes.
+            </p>
+
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#3BFF82] px-8 h-12 text-sm font-bold text-[#06060C] hover:bg-[#2de070] transition-colors duration-200"
+              >
+                Start Free
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+
+            <p className="mt-5 text-sm text-[#44445A]">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-[#8890A8] hover:text-[#3BFF82] transition-colors duration-150"
+              >
+                Sign in →
+              </Link>
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Trust badges */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-xl md:p-16"
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
-          {/* Gradient border glow */}
-          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-cyan-500/10" />
-          <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-r from-indigo-500/20 via-transparent to-cyan-500/20 opacity-50" />
-
-          <div className="relative z-10">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Ready to simplify your{" "}
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
-                Polymarket taxes
-              </span>
-              ?
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-zinc-400">
-              Join traders who trust PolyTax Tracker to handle their prediction
-              market tax reporting. Get started in under 2 minutes.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="h-12 bg-gradient-to-r from-indigo-500 to-violet-500 px-8 text-base font-semibold text-white hover:from-indigo-600 hover:to-violet-600"
-              >
-                <Link href="/register">
-                  Start Tracking Now
-                  <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="ghost"
-                size="lg"
-                className="h-12 px-8 text-base text-zinc-400 hover:text-white"
-              >
-                <Link href="/login">Sign In</Link>
-              </Button>
-            </div>
-          </div>
+          {[
+            "🔒 SOC 2 Compliant",
+            "📋 IRS Form 8949 Ready",
+            "⚡ No 1099 Required",
+          ].map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-[#8890A8]"
+            >
+              {badge}
+            </span>
+          ))}
         </motion.div>
       </div>
 
       {/* Footer */}
-      <div className="relative mt-20 border-t border-white/[0.06] pt-8">
+      <div className="relative mt-20 border-t border-[rgba(255,255,255,0.06)] pt-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500">
-              <span className="text-xs font-bold text-white">PT</span>
+          {/* Logo + brand */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#3BFF82] to-[#7B61FF]">
+              <span className="text-xs font-black text-[#06060C]">PT</span>
             </div>
-            <span className="text-sm font-medium text-zinc-400">
+            <span className="text-sm font-semibold text-[#F8F8FC]">
               PolyTax Tracker
             </span>
           </div>
-          <p className="text-sm text-zinc-600">
-            Not tax advice. Consult a qualified tax professional.
+
+          {/* Disclaimer */}
+          <p className="text-xs text-[#44445A] text-center sm:text-left">
+            Not financial or tax advice. Consult a qualified professional.
+          </p>
+
+          {/* Copyright */}
+          <p className="text-xs text-[#44445A] sm:text-right">
+            &copy; {new Date().getFullYear()} PolyTax Tracker
           </p>
         </div>
       </div>

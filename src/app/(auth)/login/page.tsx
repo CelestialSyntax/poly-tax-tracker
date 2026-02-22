@@ -5,18 +5,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { motion } from "framer-motion"
-import { Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Loader2, CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,94 +40,150 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#09090b] p-4">
-      {/* Background gradients */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-5%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,_rgba(99,102,241,0.15)_0%,_transparent_70%)]" />
-        <div className="absolute bottom-[-10%] right-[-5%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,_rgba(139,92,246,0.1)_0%,_transparent_70%)]" />
-      </div>
+    <div className="flex min-h-screen bg-[#06060C]">
+      {/* Left panel — hidden on mobile */}
+      <div className="hidden lg:flex flex-col w-[420px] shrink-0 bg-[#0C0C18] border-r border-[rgba(255,255,255,0.07)] relative overflow-hidden">
+        {/* Background orb */}
+        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(59,255,130,0.12)_0%,transparent_70%)] -translate-x-1/2 translate-y-1/2 pointer-events-none" />
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 opacity-50 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md"
-      >
-        {/* Logo */}
-        <div className="mb-8 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500">
-              <span className="text-sm font-bold text-white">PT</span>
+        {/* Content */}
+        <div className="relative z-10 flex flex-col h-full p-10">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#3BFF82] to-[#2de070]">
+              <span className="text-sm font-bold text-[#06060C]">PT</span>
             </div>
-            <span className="text-lg font-semibold text-white">
+            <span className="text-base font-semibold text-[#F8F8FC]">
               PolyTax Tracker
             </span>
           </Link>
+
+          <div className="flex-1" />
+
+          {/* Quote */}
+          <div className="space-y-3">
+            <p className="text-3xl font-bold text-[#F8F8FC] leading-tight">
+              Know exactly what you owe. Before the IRS does.
+            </p>
+            <p className="text-sm text-[#8890A8]">
+              Precision tax tracking for Polymarket traders.
+            </p>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Feature bullets */}
+          <ul className="space-y-3">
+            {[
+              "3 IRS tax treatment modes",
+              "Audit-ready Form 8949 & Schedule D",
+              "AI-powered tax assistant",
+            ].map((feature) => (
+              <li key={feature} className="flex items-center gap-3">
+                <CheckCircle2 className="size-4 shrink-0 text-[#3BFF82]" />
+                <span className="text-sm text-[#8890A8]">{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8">
+            <p className="text-xs text-[#44445A]">
+              Not financial advice. Consult a tax professional.
+            </p>
+          </div>
         </div>
+      </div>
 
-        <Card className="border-white/10 bg-white/[0.03] backdrop-blur-xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">Welcome back</CardTitle>
-            <CardDescription className="text-zinc-400">
-              Sign in to your account to continue
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={onSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-600"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-zinc-300">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  required
-                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-600"
-                />
-              </div>
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <Link href="/" className="flex lg:hidden items-center gap-3 mb-8">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#3BFF82] to-[#2de070]">
+              <span className="text-sm font-bold text-[#06060C]">PT</span>
+            </div>
+            <span className="text-base font-semibold text-[#F8F8FC]">
+              PolyTax Tracker
+            </span>
+          </Link>
 
-              {error && <p className="text-sm text-red-400">{error}</p>}
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="h-10 w-full bg-gradient-to-r from-indigo-500 to-violet-500 font-semibold text-white hover:from-indigo-600 hover:to-violet-600"
+          {/* Heading */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-[#F8F8FC]">Welcome back</h1>
+            <p className="text-sm text-[#8890A8] mt-1">Sign in to your account</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={onSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-[#8890A8] uppercase tracking-wider"
               >
-                {isLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-              <p className="text-center text-sm text-zinc-500">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/register"
-                  className="font-medium text-indigo-400 hover:text-indigo-300"
-                >
-                  Create one
-                </Link>
-              </p>
-            </CardFooter>
+                Email
+              </label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                className="bg-[#111120] border-[rgba(255,255,255,0.08)] text-[#F8F8FC] placeholder:text-[#44445A] focus:border-[#3BFF82] focus:ring-2 focus:ring-[rgba(59,255,130,0.2)] rounded-xl h-11 px-4"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-[#8890A8] uppercase tracking-wider"
+              >
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+                className="bg-[#111120] border-[rgba(255,255,255,0.08)] text-[#F8F8FC] placeholder:text-[#44445A] focus:border-[#3BFF82] focus:ring-2 focus:ring-[rgba(59,255,130,0.2)] rounded-xl h-11 px-4"
+              />
+            </div>
+
+            {error && <p className="text-sm text-[#FF3F5C]">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 bg-[#3BFF82] text-[#06060C] font-bold rounded-xl hover:bg-[#2de070] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {isLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Sign In"
+              )}
+            </button>
+
+            <p className="text-center text-sm text-[#8890A8]">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/register"
+                className="font-medium text-[#3BFF82] hover:text-[#2de070] transition-colors"
+              >
+                Create one
+              </Link>
+            </p>
           </form>
-        </Card>
-      </motion.div>
+        </div>
+      </div>
     </div>
   )
 }

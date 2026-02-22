@@ -45,10 +45,35 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  /* Brand / Obsidian Terminal tokens */
+  --color-neon: var(--neon);
+  --color-neon-dim: var(--neon-dim);
+  --color-gold: var(--gold);
+  --color-danger: var(--danger);
+  --color-brand-purple: var(--brand-purple);
+  --color-bg-deep: var(--bg-deep);
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
+
+  /* Brand colors — always available regardless of mode */
+  --neon: #3BFF82;
+  --neon-dim: rgba(59, 255, 130, 0.1);
+  --gold: #F7B731;
+  --danger: #FF3F5C;
+  --brand-purple: #7B61FF;
+
+  /* Background scale */
+  --bg-deep: #06060C;
+  --bg-base: #0C0C18;
+  --bg-surface: #111120;
+  --bg-elevated: #191928;
+
+  /* shadcn light-mode vars (kept for compatibility) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -83,37 +108,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0C0C18;
+  --foreground: #F8F8FC;
+  --card: #111120;
+  --card-foreground: #F8F8FC;
+  --popover: #111120;
+  --popover-foreground: #F8F8FC;
+  --primary: #3BFF82;
+  --primary-foreground: #06060C;
+  --secondary: #191928;
+  --secondary-foreground: #F8F8FC;
+  --muted: #191928;
+  --muted-foreground: #8890A8;
+  --accent: rgba(59, 255, 130, 0.1);
+  --accent-foreground: #3BFF82;
+  --destructive: #FF3F5C;
+  --border: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(59, 255, 130, 0.4);
+  --chart-1: #3BFF82;
+  --chart-2: #7B61FF;
+  --chart-3: #F7B731;
+  --chart-4: #FF3F5C;
+  --chart-5: #06D6A0;
+  --sidebar: #0C0C18;
+  --sidebar-foreground: #F8F8FC;
+  --sidebar-primary: #3BFF82;
+  --sidebar-primary-foreground: #06060C;
+  --sidebar-accent: rgba(59, 255, 130, 0.08);
+  --sidebar-accent-foreground: #3BFF82;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(59, 255, 130, 0.3);
 }
 
 @layer base {
@@ -125,28 +150,108 @@
   }
 }
 
+/* ─── Keyframe Animations ─────────────────────────────────────────────────── */
+
 @keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(30px, -50px) scale(1.05);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(0.95);
-  }
-  75% {
-    transform: translate(50px, 30px) scale(1.02);
-  }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%       { transform: translate(30px, -50px) scale(1.05); }
+  50%       { transform: translate(-20px, 20px) scale(0.95); }
+  75%       { transform: translate(50px, 30px) scale(1.02); }
 }
 
 @keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 0.4;
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.8; }
+}
+
+@keyframes neon-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(59, 255, 130, 0.15),
+      0 0 40px rgba(59, 255, 130, 0.05);
   }
   50% {
-    opacity: 0.8;
+    box-shadow:
+      0 0 30px rgba(59, 255, 130, 0.3),
+      0 0 60px rgba(59, 255, 130, 0.1);
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes scan {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.03; }
+  50%       { opacity: 0.06; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Custom Utility Classes ──────────────────────────────────────────────── */
+
+.neon-text {
+  color: #3BFF82;
+  text-shadow: 0 0 20px rgba(59, 255, 130, 0.5);
+}
+
+.neon-border {
+  border-color: rgba(59, 255, 130, 0.3);
+  box-shadow:
+    0 0 20px rgba(59, 255, 130, 0.1),
+    inset 0 0 20px rgba(59, 255, 130, 0.03);
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.noise-bg {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.text-mono-num {
+  font-family: var(--font-geist-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-glow:hover {
+  box-shadow:
+    0 0 40px rgba(59, 255, 130, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(59, 255, 130, 0.2);
+}
+
+/* ─── Custom Scrollbar ────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 255, 130, 0.3);
 }

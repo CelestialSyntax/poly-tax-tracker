@@ -24,7 +24,7 @@ export function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-[#09090b]/95 backdrop-blur-xl md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[rgba(255,255,255,0.06)] bg-[#0C0C18]/95 backdrop-blur-xl md:hidden">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const isActive =
@@ -38,21 +38,21 @@ export function MobileNav() {
               className={cn(
                 "relative flex flex-col items-center gap-1 rounded-lg px-3 py-1.5 text-xs transition-colors",
                 isActive
-                  ? "text-white"
-                  : "text-zinc-500 active:text-zinc-300"
+                  ? "text-[#F8F8FC]"
+                  : "text-[#44445A] active:text-[#8890A8]"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="mobile-nav-active"
-                  className="absolute inset-0 rounded-lg bg-gradient-to-t from-indigo-500/15 to-transparent"
+                  className="absolute inset-0 rounded-lg border-t-2 border-[#3BFF82] bg-[rgba(59,255,130,0.08)]"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                 />
               )}
               <item.icon
                 className={cn(
                   "relative z-10 size-5",
-                  isActive && "text-indigo-400"
+                  isActive && "text-[#3BFF82]"
                 )}
               />
               <span className="relative z-10">{item.label}</span>

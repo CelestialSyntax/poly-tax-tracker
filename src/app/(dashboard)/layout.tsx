@@ -15,7 +15,7 @@ export default function DashboardLayout({
 
   return (
     <SessionProvider>
-      <div className="flex h-screen bg-[#09090b]">
+      <div className="flex h-screen bg-[#06060C]">
         <Sidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}

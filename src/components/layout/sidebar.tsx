@@ -42,19 +42,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       initial={false}
       animate={{ width: collapsed ? 72 : 240 }}
       transition={{ duration: 0.2, ease: "easeInOut" }}
-      className="hidden h-screen flex-col border-r border-white/[0.06] bg-[#0a0a0b] md:flex"
+      className="hidden h-screen flex-col border-r border-[rgba(255,255,255,0.06)] bg-[#0C0C18] md:flex"
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-4">
+      <div className="flex h-16 items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500">
-            <span className="text-xs font-bold text-white">PT</span>
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#3BFF82] to-[#06D6A0]">
+            <span className="text-xs font-black text-[#06060C]">PT</span>
           </div>
           {!collapsed && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-sm font-semibold text-white"
+              className="text-sm font-bold tracking-tight text-[#F8F8FC]"
             >
               PolyTax
             </motion.span>
@@ -64,7 +64,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           variant="ghost"
           size="icon-xs"
           onClick={onToggle}
-          className="text-zinc-500 hover:text-white"
+          className="text-[#44445A] hover:text-[#F8F8FC]"
         >
           <ChevronLeft
             className={cn(
@@ -76,7 +76,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="mt-4 flex flex-1 flex-col gap-1 px-3">
+      <nav className="mt-6 flex flex-1 flex-col gap-1 px-2">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -86,24 +86,24 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <Link
               href={item.href}
               className={cn(
-                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "text-white"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
+                  ? "bg-[rgba(59,255,130,0.08)] text-[#F8F8FC]"
+                  : "text-[#8890A8] hover:bg-[rgba(255,255,255,0.04)] hover:text-[#F8F8FC]",
                 collapsed && "justify-center"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-lg border border-indigo-500/20 bg-gradient-to-r from-indigo-500/20 to-violet-500/20"
+                  className="absolute inset-0 rounded-xl border-l-2 border-[#3BFF82] bg-[rgba(59,255,130,0.06)]"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                 />
               )}
               <item.icon
                 className={cn(
                   "relative z-10 size-5 shrink-0",
-                  isActive && "text-indigo-400"
+                  isActive ? "text-[#3BFF82]" : ""
                 )}
               />
               {!collapsed && (
@@ -129,10 +129,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="border-t border-white/[0.06] p-3">
-          <div className="mb-3 rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
-            <p className="text-xs font-medium text-zinc-400">Tax Year 2025</p>
-            <p className="mt-1 text-xs text-zinc-500">
+        <div className="border-t border-[rgba(255,255,255,0.06)] p-3">
+          <div className="mb-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#111120] p-3">
+            <p className="font-mono text-xs font-bold text-[#3BFF82]">
+              Tax Year 2025
+            </p>
+            <p className="mt-1 text-xs text-[#44445A]">
               Filing deadline: April 15, 2026
             </p>
           </div>
@@ -140,7 +142,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       )}
 
       {/* Sign out */}
-      <div className="border-t border-white/[0.06] p-3">
+      <div className="border-t border-[rgba(255,255,255,0.06)] p-3">
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
@@ -148,7 +150,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className="w-full text-zinc-400 hover:text-red-400"
+                className="w-full text-[#8890A8] hover:text-[#FF3F5C]"
               >
                 <LogOut className="size-5" />
               </Button>
@@ -161,7 +163,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <Button
             variant="ghost"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full justify-start gap-3 text-zinc-400 hover:text-red-400"
+            className="w-full justify-start gap-3 text-[#8890A8] hover:text-[#FF3F5C]"
           >
             <LogOut className="size-5" />
             <span>Sign out</span>
