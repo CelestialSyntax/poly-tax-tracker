@@ -76,7 +76,15 @@ export class TaxCalculator {
           continue;
         }
 
-        const event = this.processDisposal(tx, lots);
+        // Clamp disposal quantity to available lots to handle incomplete data
+        // (e.g., positions opened before wallet tracking started)
+        const availableQty = lots.reduce((s, l) => s + l.quantity, 0);
+        if (availableQty < 0.000001) continue;
+        const clampedTx = availableQty < tx.quantity - 0.000001
+          ? { ...tx, quantity: availableQty, totalAmount: availableQty * tx.pricePerShare }
+          : tx;
+
+        const event = this.processDisposal(clampedTx, lots);
 
         // Update the open lots with remaining after disposal
         const disposedLotIds = new Set(event.lots.map((d) => d.lotId));
