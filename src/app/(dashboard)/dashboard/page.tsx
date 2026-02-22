@@ -8,6 +8,7 @@ import { RecentTrades } from "@/components/dashboard/recent-trades";
 import { ActivePositions } from "@/components/dashboard/active-positions";
 import { WinRateRing } from "@/components/dashboard/win-rate-ring";
 import { useDashboardData } from "@/hooks/use-dashboard";
+import { Loader2 } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -23,8 +24,44 @@ const item = {
 };
 
 export default function DashboardPage() {
-  const { stats, pnlHistory, recentTrades, taxComparison, activePositions } =
-    useDashboardData();
+  const {
+    stats,
+    pnlHistory,
+    recentTrades,
+    taxComparison,
+    activePositions,
+    isLoading,
+    error,
+    refresh,
+  } = useDashboardData();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+          <p className="text-sm text-zinc-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-red-400">Failed to load dashboard</p>
+          <p className="text-xs text-zinc-500">{error}</p>
+          <button
+            onClick={refresh}
+            className="mt-2 rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
