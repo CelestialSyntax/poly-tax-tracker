@@ -1,6 +1,7 @@
 import type {
   PolymarketTrade,
   PolymarketMarket,
+  DataApiActivity,
   NormalizedTransaction,
 } from "./types";
 
@@ -106,6 +107,43 @@ export function normalizePolymarketTrades(
       importSource: "api" as const,
     };
   });
+}
+
+/**
+ * Transform Polymarket Data API activity records into normalized transactions.
+ * Filters out incomplete TRADE records (missing side) and sorts by timestamp.
+ */
+export function normalizeDataApiActivity(
+  activities: DataApiActivity[]
+): NormalizedTransaction[] {
+  return activities
+    .filter((a) => !(a.type === "TRADE" && !a.side))
+    .map((a) => {
+      const outcome: "YES" | "NO" =
+        a.outcomeIndex === 0
+          ? "YES"
+          : a.outcomeIndex === 1
+            ? "NO"
+            : normalizeOutcome(a.outcome);
+
+      const type: NormalizedTransaction["type"] =
+        a.type === "REDEEM" ? "REDEEM" : (a.side as "BUY" | "SELL");
+
+      return {
+        marketId: a.conditionId,
+        marketTitle: a.title,
+        outcome,
+        type,
+        quantity: a.size,
+        pricePerShare: a.price,
+        totalAmount: a.usdcSize,
+        fee: 0,
+        transactionHash: a.transactionHash,
+        timestamp: new Date(a.timestamp * 1000),
+        importSource: "api" as const,
+      };
+    })
+    .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 }
 
 /**

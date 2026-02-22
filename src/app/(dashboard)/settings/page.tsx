@@ -43,6 +43,10 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  ChevronDown,
+  MessageCircle,
+  ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -103,6 +107,12 @@ export default function SettingsPage() {
     id: string;
     label: string;
   } | null>(null);
+
+  // Wallet guides
+  const [polygunGuideOpen, setPolygunGuideOpen] = useState(false);
+
+  // Wallet sync
+  const [syncingWalletId, setSyncingWalletId] = useState<string | null>(null);
 
   // Danger zone
   const [deleteAccountConfirm, setDeleteAccountConfirm] = useState("");
@@ -211,6 +221,31 @@ export default function SettingsPage() {
       toast.error("Failed to delete");
     }
     setDeleteTarget(null);
+  }
+
+  async function syncWallet(walletId: string, address: string) {
+    setSyncingWalletId(walletId);
+    try {
+      const res = await fetch("/api/transactions/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "wallet", address }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(
+          `Synced: ${data.imported} imported, ${data.duplicates} duplicates`
+        );
+        fetchSettings();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Sync failed");
+      }
+    } catch {
+      toast.error("Failed to sync wallet");
+    } finally {
+      setSyncingWalletId(null);
+    }
   }
 
   async function copyKey() {
@@ -569,23 +604,166 @@ export default function SettingsPage() {
                         )}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() =>
-                        setDeleteTarget({
-                          type: "wallet",
-                          id: wallet.id,
-                          label:
-                            wallet.label ?? shortenAddress(wallet.address),
-                        })
-                      }
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={syncingWalletId === wallet.id}
+                        onClick={() => syncWallet(wallet.id, wallet.address)}
+                      >
+                        <RefreshCw
+                          className={`size-4 ${syncingWalletId === wallet.id ? "animate-spin" : ""}`}
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() =>
+                          setDeleteTarget({
+                            type: "wallet",
+                            id: wallet.id,
+                            label:
+                              wallet.label ?? shortenAddress(wallet.address),
+                          })
+                        }
+                      >
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </CardContent>
+            </Card>
+
+            {/* Wallet Guide: Polygun */}
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+              <CardHeader
+                className="cursor-pointer select-none"
+                onClick={() => setPolygunGuideOpen(!polygunGuideOpen)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-violet-500/15">
+                      <MessageCircle className="size-4 text-violet-400" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">
+                        Find Your Wallet Address
+                      </CardTitle>
+                      <CardDescription>
+                        How to get your address from Polygun, Polymarket, and
+                        other platforms
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`size-5 text-muted-foreground transition-transform ${
+                      polygunGuideOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </CardHeader>
+              {polygunGuideOpen && (
+                <CardContent className="space-y-6 border-t border-white/5 pt-6">
+                  {/* Polygun Guide */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-violet-500/15 text-violet-400 border-violet-500/30 hover:bg-violet-500/15">
+                        Polygun
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        Telegram Bot
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      Polygun has two addresses: a deposit wallet (shown under
+                      Wallet) and a trading wallet (shown under Profile).
+                      We need the{" "}
+                      <strong className="text-foreground">
+                        Profile address
+                      </strong>{" "}
+                      &mdash; that&apos;s the proxy wallet where your
+                      Polymarket trades actually execute on-chain.
+                    </p>
+
+                    <ol className="space-y-3 text-sm">
+                      <li className="flex gap-3">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium">
+                          1
+                        </span>
+                        <span>
+                          Open the{" "}
+                          <strong className="text-foreground">
+                            Polygun bot
+                          </strong>{" "}
+                          in Telegram
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium">
+                          2
+                        </span>
+                        <span>
+                          From the main menu, tap{" "}
+                          <strong className="text-foreground">
+                            Wallet
+                          </strong>
+                          , then tap{" "}
+                          <strong className="text-foreground">
+                            Profile
+                          </strong>
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium">
+                          3
+                        </span>
+                        <span>
+                          Copy the{" "}
+                          <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs font-mono">
+                            0x...
+                          </code>{" "}
+                          address shown on your profile &mdash; this is your
+                          Polymarket trading wallet
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium">
+                          4
+                        </span>
+                        <span>
+                          Paste it into the{" "}
+                          <strong className="text-foreground">
+                            Add Wallet
+                          </strong>{" "}
+                          form above
+                        </span>
+                      </li>
+                    </ol>
+
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                      <p className="text-xs text-red-200/80">
+                        <strong>Don&apos;t use the Wallet page address.</strong>{" "}
+                        That&apos;s your deposit wallet for receiving USDC. The{" "}
+                        <strong>Profile</strong> address is the proxy wallet
+                        that holds your positions and executes trades &mdash;
+                        it&apos;s the one with your trade history.
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                      <p className="text-xs text-amber-200/80">
+                        <strong>Tip:</strong> Label this wallet
+                        &quot;Polygun&quot; to tell it apart from other
+                        platforms. Polygun charges a 1% fee per trade on top of
+                        Polymarket&apos;s fees &mdash; both are captured when we
+                        sync your on-chain history.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              )}
             </Card>
           </motion.div>
         </TabsContent>

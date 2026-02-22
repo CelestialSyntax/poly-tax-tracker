@@ -3,9 +3,9 @@ import { db } from "@/lib/db";
 import { transactions, wallets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth } from "@/lib/auth/config";
-import { fetchAllTradesForWallet, fetchMarketInfo } from "@/lib/polymarket/api";
+import { fetchActivityForWallet } from "@/lib/polymarket/api";
 import {
-  normalizePolymarketTrades,
+  normalizeDataApiActivity,
   parseCSVToTransactions,
   detectCSVColumns,
 } from "@/lib/polymarket/parser";
@@ -106,18 +106,9 @@ async function handleWalletImport(
     walletId = w.id;
   }
 
-  // Fetch from Polymarket
-  const rawTrades = await fetchAllTradesForWallet(address);
-  const uniqueMarkets = [...new Set(rawTrades.map((t) => t.market))];
-  const marketTitles = new Map<string, string>();
-  await Promise.all(
-    uniqueMarkets.map(async (id) => {
-      const m = await fetchMarketInfo(id);
-      if (m) marketTitles.set(id, m.question);
-    })
-  );
-
-  const normalized = normalizePolymarketTrades(rawTrades, marketTitles);
+  // Fetch from Polymarket Data API (no auth required, includes market titles)
+  const activities = await fetchActivityForWallet(address);
+  const normalized = normalizeDataApiActivity(activities);
 
   let imported = 0;
   let duplicates = 0;

@@ -3,10 +3,12 @@ import type {
   PolymarketTradesResponse,
   PolymarketMarket,
   PolymarketPosition,
+  DataApiActivity,
 } from "./types";
 
 const CLOB_BASE_URL = "https://clob.polymarket.com";
 const GAMMA_BASE_URL = "https://gamma-api.polymarket.com";
+const DATA_API_BASE_URL = "https://data-api.polymarket.com";
 
 const RATE_LIMIT_MS = 200;
 let lastRequestTime = 0;
@@ -110,6 +112,37 @@ export class PolymarketClient {
     }
     return res.json();
   }
+
+  /**
+   * Fetch activity for a wallet address with offset-based pagination.
+   */
+  async fetchActivity(address: string): Promise<DataApiActivity[]> {
+    const allActivity: DataApiActivity[] = [];
+    const limit = 500;
+    let offset = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const params = new URLSearchParams({
+        user: address,
+        limit: String(limit),
+        offset: String(offset),
+      });
+
+      const res = await rateLimitedFetch(`${DATA_API_BASE_URL}/activity?${params}`);
+      if (!res.ok) {
+        throw new Error(`Polymarket Data API error: ${res.status} ${res.statusText}`);
+      }
+
+      const page: DataApiActivity[] = await res.json();
+      allActivity.push(...page);
+
+      if (page.length < limit) break;
+      offset += limit;
+    }
+
+    return allActivity;
+  }
 }
 
 export const polymarketClient = new PolymarketClient();
@@ -184,4 +217,13 @@ export async function fetchOpenPositions(
   address: string
 ): Promise<PolymarketPosition[]> {
   return polymarketClient.fetchPositions(address);
+}
+
+/**
+ * Fetch all activity for a wallet address, paginating through results.
+ */
+export async function fetchActivityForWallet(
+  address: string
+): Promise<DataApiActivity[]> {
+  return polymarketClient.fetchActivity(address);
 }

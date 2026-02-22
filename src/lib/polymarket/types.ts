@@ -83,6 +83,26 @@ export interface PolymarketPosition {
   percentPnl: string;
 }
 
+// ─── Polymarket Data API Types ───────────────────────────
+
+export interface DataApiActivity {
+  proxyWallet: string;
+  timestamp: number;          // unix seconds
+  conditionId: string;
+  type: "TRADE" | "REDEEM";
+  size: number;               // shares
+  usdcSize: number;           // USDC amount
+  transactionHash: string;
+  price: number;
+  asset: string;              // token ID
+  side: string;               // "BUY" | "SELL" | ""
+  outcomeIndex: number;       // 0 = first outcome, 1 = second, 999 = N/A
+  title: string;
+  slug: string;
+  eventSlug: string;
+  outcome: string;            // "Up", "Down", "Yes", "No", ""
+}
+
 // ─── Normalized Transaction (from any source) ───────────
 
 export interface NormalizedTransaction {
